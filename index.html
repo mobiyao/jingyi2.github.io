@@ -1,0 +1,1016 @@
+﻿<!DOCTYPE html>
+
+
+
+<html lang="en">
+
+
+
+<head>
+
+
+
+    <meta charset="UTF-8">
+
+
+
+    <meta name="viewport" content="width=, initial-scale=1.0">
+
+
+
+    <title>西林电子地图</title>
+
+
+
+    <!-- 1. 新建容器，存放地图 -->
+
+
+
+    <style>
+
+
+
+      html,
+
+
+
+      body,
+
+
+
+      #container{
+
+
+
+          width: 100%;
+
+
+
+          height: 100%;
+
+
+
+      }
+
+
+
+      #input-card{
+
+
+
+          position: fixed;
+
+
+
+          background-color: rgba(216, 220, 224, 0.881);
+
+
+
+          /*max-height: 20%; */
+
+
+
+          overflow-y: auto;
+
+
+
+          top: 250px;
+
+
+
+          left: 10px;
+
+
+
+          width: 100px;
+
+
+
+          height:110px;
+
+      }
+
+
+
+      #input-card .btn{
+
+
+
+          margin-right: 1.2rem;
+
+
+
+          width: 5rem;
+
+
+
+      }
+
+
+
+   </style>
+
+
+
+<script type="text/javascript">
+
+
+
+    window._AMapSecurityConfig = {
+
+
+
+      securityJsCode: "827186780e3cdc7a18c989bfc40fae46",
+
+
+
+    };
+
+
+
+  </script>
+
+
+
+  <script src="https://webapi.amap.com/loader.js"></script>
+
+
+
+<script src="https://webapi.amap.com/maps?v=2.0&key=19374873d11cdd676e26880f6e019e26&plugin=AMap.Driving,AMap.MoveAnimation"></script>
+
+
+
+</head>
+
+
+
+<body>
+
+
+
+  <div id="container"></div>
+
+
+
+  <div id="input-card">
+
+
+
+    <h4 align="center">轨迹动画<h4>
+
+
+
+<div class="input-item">       
+
+
+
+      <button class="btn"  onclick="startAnimation()">开始动画</button> 
+
+
+
+      <div class="input-card">
+
+  </div>
+
+
+
+</div>  
+
+
+
+    <script>
+
+
+
+          var map = new AMap.Map("container", {
+
+
+
+          center:[102.75564194, 25.05765007],//地图中心点
+
+
+
+          viewMode:'2D',//初始地图的视图模式
+
+
+
+          zoom:15,//地图级别
+
+
+
+        });
+
+
+
+        </script>
+
+
+
+        <script>
+
+
+
+            //添加地图控件
+
+
+
+    AMap.plugin(['AMap.ToolBar','AMap.Scale','AMap.ControlBar','AMap.Geolocation','AMap.HawkEye'],function(){ //添加多个控件，需要设定一个控件名称的数组
+
+
+
+  var toolbar = new AMap.ToolBar(//缩放工具条实例化
+
+
+
+  {position:{
+
+
+
+    left:'10px',
+
+
+
+    top:'12px'
+
+
+
+  }});
+
+
+
+  var scale = new AMap.Scale(//比例尺控件实例化
+
+
+
+    {position:{
+
+
+
+    left:'10px',
+
+
+
+    bottom:'20px'
+
+
+
+  }}); 
+
+
+
+  var controlbar = new AMap.ControlBar(//控件罗盘控件实例化
+
+
+
+    {position:{
+
+
+
+    right:'10px',
+
+
+
+    top:'15px'
+
+
+
+  }});
+
+
+
+  var geolocation = new AMap.Geolocation(//定位控件实例化
+
+
+
+    {position:{
+
+
+
+    left:'10px',
+
+
+
+    top:'100px'
+
+
+
+  }}); 
+
+
+
+  var hawkeye = new AMap.HawkEye(//鹰眼工具条实例化
+
+
+
+  {position:{
+
+
+
+    right:'10px',
+
+
+
+    bottom:'10px'
+
+
+
+  }});
+
+
+
+  map.addControl(toolbar); //添加控件
+
+
+
+  map.addControl(scale); //添加比例尺控件
+
+
+
+  map.addControl(controlbar); //工具条方向控件
+
+
+
+  map.addControl(geolocation); //添加定位控件
+
+
+
+  map.addControl(hawkeye);//添加鹰眼控件
+
+
+
+
+
+});
+
+
+
+//设置浏览路径
+
+
+
+marker = new AMap.Marker({
+
+
+
+map: map,
+
+
+
+position: [102.75261992, 25.05777691],
+
+
+
+icon:new AMap.Icon({image:'https://a.amap.com/jsapi_demos/static/demo-center-v2/car.png',imageSize:[30,50]}),
+
+
+
+offset: new AMap.Pixel(0,0),
+
+
+
+
+});
+
+
+
+var lineArr =[];
+
+
+
+AMap.plugin(["AMap.Driving"], function () {
+
+
+
+var driving = new AMap.Driving({
+
+
+
+map:map,
+
+
+
+policy:0, 
+
+
+
+});
+
+
+
+var startLngLat = [102.752464,25.057825]; //设置起始点一号门
+
+
+
+var endLngLat = [102.756424,25.059647]; //设置终点二号门
+
+
+
+var opts ={waypoints: [[102.757319,25.057093],
+
+
+
+[102.759594,25.056942],[102.76159,25.058463],[102.762424,25.061565],[102.75818,25.062681],[102.758763,25.060194]],} //设置途径点
+
+
+
+//添加文字注记和图片注记
+
+
+
+const position = new AMap.LngLat(102.752464,25.057825); //Marker 经纬度
+
+
+
+const icon= new AMap.Icon({image:'yihaomen.jpg',imageSize:[60,60]})//设置图片大小
+
+
+
+const marker = new AMap.Marker({
+
+
+
+position: position,
+
+
+
+icon:icon
+
+
+
+});
+
+
+
+map.add(marker)
+
+
+
+var text =new AMap.Text({
+
+
+
+position:new AMap.LngLat(102.752464,25.057825),//经纬度
+
+
+
+anchor:'top-right',//文字标注位置
+
+
+
+text: '一号门',//文本内容
+
+
+
+style:{'background-color':'green','color': 'white',},//设置文本格式
+
+
+
+});
+
+
+
+map.add(text);//添加文本到地图
+
+
+
+var text =new AMap.Text({
+
+
+
+position:new AMap.LngLat(102.756424,25.059647),//经纬度
+
+
+
+anchor:'top-right',//文字标注位置
+
+
+
+text: '二号门',//文本内容
+
+
+
+style:{'background-color':'green','color': 'white',},//设置文本格式
+
+
+
+});
+
+
+
+map.add(text);//添加文本到地图
+
+
+
+
+
+
+
+map.add(text);
+
+const position1 = new AMap.LngLat(102.756424,25.059647); //标记图片 经纬度
+
+
+
+const icon1= new AMap.Icon({image:'二号门.png',imageSize:[60,60]});//设置图片大小
+
+
+
+const marker1= new AMap.Marker({
+
+
+
+position: position1,
+
+
+
+icon:icon1
+
+
+
+});
+
+
+
+map.add(marker1)
+
+
+
+//添加文字标记
+
+var text =new AMap.Text({
+
+
+
+position:new AMap.LngLat(102.757319,25.057093),//标记文本经纬度
+
+
+
+anchor:'top-right',//文字标注位置
+
+
+
+text: '第二图书馆',//文本内容
+
+
+
+style:{'background-color':'blue','color': 'white',},//设置文本格式
+
+
+
+});
+
+
+
+map.add(text);//添加文字标记到地图
+
+
+
+const position2 = new AMap.LngLat(102.760251,25.057522); //Marker 经纬度
+
+
+
+const icon2= new AMap.Icon({image:'秋海.png',imageSize:[60,60]});//设置图片大小
+
+
+
+const marker2= new AMap.Marker({
+
+
+
+position: position2,
+
+
+
+icon:icon2
+
+
+
+});
+
+
+
+map.add(marker2)
+
+
+
+var text =new AMap.Text({
+
+
+
+position:new AMap.LngLat(102.760251,25.057522),//点标记在地图上显示的位置
+
+
+
+anchor:'top-right',//设置文本标记锚点位置
+
+
+
+text: '秋海',//标记显示的文本内容
+
+
+
+style:{'background-color':'blue','color': 'white',},//设置文本样式
+
+
+
+});
+
+
+
+map.add(text); //将文本标记设置到地图上
+
+const position3 = new AMap.LngLat(102.758877,25.060287); //Marker 经纬度
+
+
+
+    const icon3= new AMap.Icon({image:'至真楼.png',imageSize:[60,60]});
+
+
+
+    const marker3= new AMap.Marker({
+
+
+
+    position: position3,
+
+
+
+    icon:icon3
+
+
+
+});
+
+
+
+map.add(marker3)
+
+
+
+var text =new AMap.Text({
+
+
+
+  position:new AMap.LngLat(102.758877,25.060287),//点标记在地图上显示的位置
+
+
+
+  anchor:'top-right',//设置文本标记锚点位置
+
+
+
+  text: '至真楼',//标记显示的文本内容
+
+
+
+  style:{'background-color':'blue','color': 'white',},//设置文本样式
+
+
+
+});
+
+
+
+map.add(text); //将文本标记设置到地图上
+
+
+
+const position4 = new AMap.LngLat(102.75818,25.062681); //Marker 经纬度
+
+
+
+    const icon4= new AMap.Icon({image:'食堂.png',imageSize:[60,60]});
+
+
+
+    const marker4= new AMap.Marker({
+
+
+
+    position: position4,
+
+
+
+    icon:icon4
+
+
+
+});
+
+
+
+map.add(marker4)
+
+
+
+var text =new AMap.Text({
+
+
+
+  position:new AMap.LngLat(102.75818,25.062681),
+
+
+
+  anchor:'top-right',
+
+
+
+  text: '西南林业大学竹苑餐厅',
+
+
+
+  style:{'background-color':'blue','color': 'white',},
+
+
+
+});
+
+
+
+map.add(text);
+
+
+
+
+
+
+
+const position5 = new AMap.LngLat(102.762025,25.059285); //Marker 经纬度
+
+
+
+    const icon5= new AMap.Icon({image:'shitang.jpg',imageSize:[60,60]});
+
+
+
+    const marker5= new AMap.Marker({
+
+
+
+    position: position5,
+
+
+
+    icon:icon5
+
+
+
+});
+
+
+
+map.add(marker5)
+
+
+
+var text =new AMap.Text({
+
+
+
+  position:new AMap.LngLat(102.762025,25.059285),
+
+
+
+  anchor:'top-right',
+
+
+
+  text: '第四食堂',
+
+
+
+  style:{'background-color':'blue','color': 'white',},
+
+
+
+});
+
+
+
+map.add(text);
+
+
+
+const position6 = new AMap.LngLat(102.762424,25.061565); //Marker 经纬度
+
+
+
+    const icon6= new AMap.Icon({image:'体育馆.png',imageSize:[60,60]});
+
+
+
+    const marker6= new AMap.Marker({
+
+
+
+    position: position6,
+
+
+
+    icon:icon6
+
+
+
+});
+
+
+
+map.add(marker6)
+
+
+
+var text =new AMap.Text({
+
+
+
+  position:new AMap.LngLat(102.762424,25.061565),
+
+
+
+  anchor:'top-right',
+
+
+
+  text: '体育馆',
+
+
+
+  style:{'background-color':'blue','color': 'white',},
+
+
+
+});
+
+
+
+map.add(text);
+
+
+
+
+
+const position7 = new AMap.LngLat(102.757319,25.057093); //Marker 经纬度
+
+
+
+    const icon7= new AMap.Icon({image:'第二图书馆.png',imageSize:[60,60]});//调整图片大小
+
+
+
+    const marker7= new AMap.Marker({
+
+
+
+    position: position7,
+
+
+
+    icon:icon7
+
+
+
+});
+
+
+
+map.add(marker7)
+
+
+
+
+
+//轨迹回放
+
+ //status：complete 表示查询成功，no_data 为查询无结果，error 代表查询错误
+
+    //查询成功时，result 即为对应的驾车导航信息
+
+        driving.search(startLngLat, endLngLat, opts, function (status, result) {
+
+ // 根据起终点经纬度规划驾车导航路线
+
+        console.log(status);
+
+
+
+        console.log(startLngLat);
+
+
+
+        result.routes[0].steps.forEach(function(item){
+
+
+
+        lineArr.push(...item.path)
+
+
+
+        });
+
+
+
+        });
+
+
+
+        });
+
+
+
+      function startAnimation(){
+
+
+
+          marker.moveAlong(lineArr,{duration:200,})};
+
+
+
+          function startAnimation(){
+
+
+
+          marker.moveAlong(lineArr,{duration:200,})};  
+
+
+
+           // 绘制轨迹动画
+
+
+
+        var polyline = new AMap.Polyline({
+
+
+
+            map: map,
+
+
+
+            path: lineArr,
+
+
+
+            showDir:true,
+
+
+
+            strokeColor: "#28F",  //线颜色
+
+
+
+            strokeWeight: 6,      //线宽
+
+
+
+        });
+
+
+
+        var passedPolyline = new AMap.Polyline({
+
+
+
+            map: map,
+
+
+
+            strokeColor: "#AF5",  //线颜色
+
+
+
+            strokeWeight: 6,      //线宽
+
+
+
+        });
+
+
+
+        marker.on('moving', function (e) {
+
+
+
+            passedPolyline.setPath(e.passedPath);
+
+
+
+            map.setCenter(e.target.getPosition(),true)
+
+
+
+        });
+
+     //将线路调整到到合适视野
+
+        map.setFitView();
+
+
+
+    </script>
+
+
+
+</body>
+
+
+
+</html>
